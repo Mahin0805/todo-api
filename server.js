@@ -1,27 +1,26 @@
 const express = require('express');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Middleware to allow our app to read JSON from Postman
 app.use(express.json());
 
 let todos = [
     { id: 1, task: "Learn Node.js", completed: false },
-    { id: 2, task: "Build an API", completed: false }
+    { id: 2, task: "Build an API", completed: false },
+    { id: 3, task: "Deploy the todo app", completed: true }
 ];
 
-// --- YOUR ROUTES GO HERE ---
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
 
- // GET /todos - Get all todos
+
 app.get('/todos', (req, res) => {
     res.json(todos);
 });
 
- // POST /todos - Create a new todo
+
 app.post('/todos', (req, res) => {
     const newTodo = {
         id: todos.length + 1,
@@ -32,7 +31,7 @@ app.post('/todos', (req, res) => {
     res.status(201).json(newTodo);
 });
 
- // PUT /todos/:id - Update a todo
+
 
 app.put('/todos/:id', (req, res) => {
     const id = parseInt(req.params.id);
@@ -46,7 +45,7 @@ app.put('/todos/:id', (req, res) => {
     }
 });
 
- // DELETE /todos/:id - Delete a todo
+
 app.delete('/todos/:id', (req, res) => {
     const id = parseInt(req.params.id);
     const todoIndex = todos.findIndex(t => t.id === id);

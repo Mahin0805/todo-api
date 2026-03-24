@@ -75,10 +75,38 @@ app.post('/login', (req, res) => {
     const user = users.find(u => u.email === email && u.password === password);
 
     if (user) {
-        // Create the Access Token (The "Digital Key")
+
         const token = jwt.sign({ username: user.username }, SECRET_KEY, { expiresIn: '1h' });
         res.json({ accessToken: token });
     } else {
         res.status(401).json({ message: "Invalid username or password" });
     }
+});
+
+app.get('/user/profile', authenticateToken, (req, res) => {
+    const user = users.find(u => u.username === req.user.username);
+    
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({
+        username: user.username,
+        email: user.email || "No email set"
+    });
+});
+
+app.put('/user/profile', authenticateToken, (req, res) => {
+    const user = users.find(u => u.username === req.user.username);
+    
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (req.body.username) user.username = req.body.username;
+    if (req.body.email) user.email = req.body.email;
+
+    res.json({
+        message: "Profile updated successfully!",
+        updatedUser: {
+            username: user.username,
+            email: user.email
+        }
+    });
 });

@@ -18,6 +18,18 @@ let todos = [
     { id: 3, task: "Deploy the todo app", completed: true }
 ];
 
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) return res.status(401).json({ message: "No token provided!" });
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) return res.status(403).json({ message: "Invalid token!" });
+        req.user = user;
+        next();
+    });
+};
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
@@ -112,15 +124,4 @@ app.put('/user/profile', authenticateToken, (req, res) => {
     });
 });
 
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
 
-    if (!token) return res.status(401).json({ message: "No token provided!" });
-
-    jwt.verify(token, SECRET_KEY, (err, user) => {
-        if (err) return res.status(403).json({ message: "Invalid token!" });
-        req.user = user;
-        next();
-    });
-};

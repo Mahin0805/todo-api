@@ -30,8 +30,10 @@ const authenticateToken = (req, res, next) => {
   if (!token) return res.status(401).json({ message: "No token provided!" });
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) {console.log("JWT Error:", err.message);
-    return res.status(403).json({ message: "Invalid token!" });}
+    if (err) {
+      console.log("JWT Error:", err.message);
+      return res.status(403).json({ message: "Invalid token!" });
+    }
     req.user = user;
     next();
   });
@@ -92,13 +94,21 @@ app.post("/login", (req, res) => {
     const token = jwt.sign({ username: user.username }, SECRET_KEY, {
       expiresIn: "1h",
     });
-    res.json({ accessToken: token });
+    res.json({
+      access_token: token,
+      token_type: "Bearer",
+      user: {
+        id: user.id,
+        name: user.username,
+        email: user.email,
+      },
+    });
   } else {
     res.status(401).json({ message: "Invalid username or password" });
   }
 });
 
-app.get("/user/profile", authenticateToken, (req, res) => {
+app.get("/user", authenticateToken, (req, res) => {
   const user = users.find((u) => u.username === req.user.username);
 
   if (!user) return res.status(404).json({ message: "User not found" });

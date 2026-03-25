@@ -119,7 +119,7 @@ app.get("/user", authenticateToken, (req, res) => {
   });
 });
 
-app.put("/user/profile", authenticateToken, (req, res) => {
+app.put("/user", authenticateToken, (req, res) => {
   const user = users.find((u) => u.username === req.user.username);
 
   if (!user) return res.status(404).json({ message: "User not found" });

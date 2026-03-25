@@ -9,12 +9,7 @@ app.use(express.json());
 
 let users = [
   { id: 1, username: "mahin", email: "mahin@gmail.com", password: "password1" },
-  {
-    id: 2,
-    username: "khaled",
-    email: "khaled@gmail.com",
-    password: "password2",
-  },
+  { id: 2, username: "khaled", email: "khaled@gmail.com", password: "password2",},
 ];
 
 let todos = [
@@ -58,8 +53,9 @@ app.post("/todos", (req, res) => {
 });
 
 app.put("/todos/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const todo = todos.find((t) => t.id === id);
+  const id = req.params.id;
+
+  const todo = todos.find((t) => t.id == id);
   if (todo) {
     todo.task = req.body.task || todo.task;
     todo.completed = req.body.completed ?? todo.completed;
@@ -70,8 +66,9 @@ app.put("/todos/:id", (req, res) => {
 });
 
 app.delete("/todos/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const todoIndex = todos.findIndex((t) => t.id === id);
+  const id = req.params.id;
+
+  const todoIndex = todos.findIndex((t) => t.id == id);
   if (todoIndex !== -1) {
     todos.splice(todoIndex, 1);
     res.status(204).send();

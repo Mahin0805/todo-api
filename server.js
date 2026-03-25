@@ -1,6 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-
+const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET_KEY = process.env.JWT_SECRET || 'my-secret-key123456';
@@ -43,7 +43,7 @@ app.get('/todos', (req, res) => {
 
 app.post('/todos', (req, res) => {
     const newTodo = {
-        id: Date.now(),
+        id: crypto.randomUUID(),
         task: req.body.task,
         completed: false
     };

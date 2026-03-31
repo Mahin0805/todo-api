@@ -105,7 +105,16 @@ app.delete("/todos/:id", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const { username, name, email, password, confirmPassword } = req.body || {};
+  const {
+    username,
+    name,
+    email,
+    password,
+    confirmPassword,
+    confirm_password,
+    password_confirmation,
+    confirm,
+  } = req.body || {};
 
   const resolvedUsername =
     typeof username === "string" && username.trim()
@@ -120,9 +129,20 @@ app.post("/register", (req, res) => {
   const resolvedPassword =
     typeof password === "string" && password ? password : null;
 
-  const resolvedConfirm =
-    typeof (confirmPassword || "") === "string" && confirmPassword
+  const confirmCandidate =
+    typeof confirmPassword === "string"
       ? confirmPassword
+      : typeof confirm_password === "string"
+        ? confirm_password
+        : typeof password_confirmation === "string"
+          ? password_confirmation
+        : typeof confirm === "string"
+          ? confirm
+          : null;
+
+  const resolvedConfirm =
+    typeof confirmCandidate === "string" && confirmCandidate
+      ? confirmCandidate
       : null;
 
   if (!resolvedUsername || !resolvedEmail || !resolvedPassword) {
@@ -132,7 +152,9 @@ app.post("/register", (req, res) => {
   }
 
   if (!resolvedConfirm) {
-    return res.status(400).json({ message: "confirmPassword is required" });
+    return res
+      .status(400)
+      .json({ message: "confirmPassword is required" });
   }
 
   if (resolvedConfirm !== resolvedPassword) {

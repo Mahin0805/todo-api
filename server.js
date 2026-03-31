@@ -72,7 +72,7 @@ app.get("/todos", (req, res) => {
 app.post("/todos", (req, res) => {
   const newTodo = {
     id: crypto.randomUUID(),
-    task: req.body.task,
+    title: req.body.title || "",
     completed: false,
   };
   todos.push(newTodo);
@@ -84,7 +84,7 @@ app.put("/todos/:id", (req, res) => {
 
   const todo = todos.find((t) => t.id == id);
   if (todo) {
-    todo.task = req.body.task || todo.task;
+    todo.title = req.body.title || todo.title;
     todo.completed = req.body.completed ?? todo.completed;
     res.json(todo);
   } else {

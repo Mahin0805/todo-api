@@ -121,7 +121,9 @@ app.post("/register", (req, res) => {
     typeof password === "string" && password ? password : null;
 
   const resolvedConfirm =
-    typeof confirmPassword === "string" && confirmPassword ? confirmPassword : null;
+    typeof (confirmPassword || "") === "string" && confirmPassword
+      ? confirmPassword
+      : null;
 
   if (!resolvedUsername || !resolvedEmail || !resolvedPassword) {
     return res.status(400).json({

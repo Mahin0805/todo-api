@@ -5,6 +5,33 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET_KEY = process.env.JWT_SECRET || "my-secret-key123456";
 
+const corsOriginsRaw = process.env.CORS_ORIGIN;
+const allowedOrigins = corsOriginsRaw
+  ? corsOriginsRaw
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean)
+  : null;
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins) {
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Vary", "Origin");
+    }
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+
 app.use(express.json());
 
 let users = [
@@ -78,14 +105,75 @@ app.delete("/todos/:id", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const { username, email, password } = req.body;
-  users.push({ username, email, password });
-  res.status(201).json({ message: "User registered successfully!" });
+  const { username, name, email, password, confirmPassword } = req.body || {};
+
+  const resolvedUsername =
+    typeof username === "string" && username.trim()
+      ? username.trim()
+      : typeof name === "string" && name.trim()
+        ? name.trim()
+        : null;
+
+  const resolvedEmail =
+    typeof email === "string" && email.trim() ? email.trim().toLowerCase() : null;
+
+  const resolvedPassword =
+    typeof password === "string" && password ? password : null;
+
+  const resolvedConfirm =
+    typeof confirmPassword === "string" && confirmPassword ? confirmPassword : null;
+
+  if (!resolvedUsername || !resolvedEmail || !resolvedPassword) {
+    return res.status(400).json({
+      message: "username/name, email, and password are required",
+    });
+  }
+
+  if (!resolvedConfirm) {
+    return res.status(400).json({ message: "confirmPassword is required" });
+  }
+
+  if (resolvedConfirm !== resolvedPassword) {
+    return res.status(400).json({ message: "Passwords do not match" });
+  }
+
+  const existingUser = users.find(
+    (u) => typeof u.email === "string" && u.email.toLowerCase() === resolvedEmail,
+  );
+  if (existingUser) {
+    return res.status(409).json({ message: "Email is already registered" });
+  }
+
+  const newUser = {
+    id: crypto.randomUUID(),
+    username: resolvedUsername,
+    email: resolvedEmail,
+    password: resolvedPassword,
+  };
+  users.push(newUser);
+
+  res.status(201).json({
+    message: "User registered successfully!",
+    user: {
+      id: newUser.id,
+      name: newUser.username,
+      email: newUser.email,
+    },
+  });
 });
 
 app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-  const user = users.find((u) => u.email === email && u.password === password);
+  const { email, password } = req.body || {};
+  const resolvedEmail =
+    typeof email === "string" && email.trim() ? email.trim().toLowerCase() : null;
+
+  if (!resolvedEmail || typeof password !== "string") {
+    return res.status(400).json({ message: "email and password are required" });
+  }
+
+  const user = users.find(
+    (u) => typeof u.email === "string" && u.email.toLowerCase() === resolvedEmail && u.password === password,
+  );
 
   if (user) {
     const token = jwt.sign({ username: user.username }, SECRET_KEY, {

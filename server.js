@@ -109,16 +109,7 @@ app.delete("/todos/:id", authenticateToken, (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const {
-    username,
-    name,
-    email,
-    password,
-    confirmPassword,
-    confirm_password,
-    password_confirmation,
-    confirm,
-  } = req.body || {};
+  const { username, name, email, password, confirmPassword } = req.body || {};
 
   const resolvedUsername =
     typeof username === "string" && username.trim()
@@ -135,14 +126,7 @@ app.post("/register", (req, res) => {
 
   const confirmCandidate =
     typeof confirmPassword === "string"
-      ? confirmPassword
-      : typeof confirm_password === "string"
-        ? confirm_password
-        : typeof password_confirmation === "string"
-          ? password_confirmation
-        : typeof confirm === "string"
-          ? confirm
-          : null;
+      ? confirmPassword : null;
 
   const resolvedConfirm =
     typeof confirmCandidate === "string" && confirmCandidate

@@ -40,9 +40,9 @@ let users = [
 ];
 
 let todos = [
-  { id: 1, task: "Learn Node.js", completed: false },
-  { id: 2, task: "Build an API", completed: false },
-  { id: 3, task: "Deploy the todo app", completed: true },
+  { id: 1, title: "Learn Node.js", completed: false, username: "mahin" },
+  { id: 2, title: "Build an API", completed: false, username: "mahin" },
+  { id: 3, title: "Deploy the todo app", completed: true, username: "khaled" },
 ];
 
 const authenticateToken = (req, res, next) => {
@@ -65,24 +65,26 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-app.get("/todos", (req, res) => {
-  res.json(todos);
+app.get("/todos", authenticateToken, (req, res) => {
+  const userTodos = todos.filter((t) => t.username === req.user.username);
+  res.json(userTodos);
 });
 
-app.post("/todos", (req, res) => {
+app.post("/todos", authenticateToken, (req, res) => {
   const newTodo = {
     id: crypto.randomUUID(),
     title: req.body.title || "",
     completed: false,
+    username: req.user.username,
   };
   todos.push(newTodo);
   res.status(201).json(newTodo);
 });
 
-app.put("/todos/:id", (req, res) => {
+app.put("/todos/:id", authenticateToken, (req, res) => {
   const id = req.params.id;
 
-  const todo = todos.find((t) => t.id == id);
+  const todo = todos.find((t) => t.id == id && t.username === req.user.username);
   if (todo) {
     todo.title = req.body.title || todo.title;
     todo.completed = req.body.completed ?? todo.completed;
@@ -92,10 +94,12 @@ app.put("/todos/:id", (req, res) => {
   }
 });
 
-app.delete("/todos/:id", (req, res) => {
+app.delete("/todos/:id", authenticateToken, (req, res) => {
   const id = req.params.id;
 
-  const todoIndex = todos.findIndex((t) => t.id == id);
+  const todoIndex = todos.findIndex(
+    (t) => t.id == id && t.username === req.user.username,
+  );
   if (todoIndex !== -1) {
     todos.splice(todoIndex, 1);
     res.status(204).send();
